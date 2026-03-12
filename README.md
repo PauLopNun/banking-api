@@ -1,26 +1,26 @@
 ![CI](https://github.com/PauLopNun/banking-api/actions/workflows/ci.yml/badge.svg)
 
-# 🏦 Banking API
+# Banking API
 
 A production-ready REST API for banking operations built with **Spring Boot 3.5** and **Java 21**.  
 Developed as part of the **GFT Junior Training Programme 2026**.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔐 **JWT Authentication** — secure register & login
-- 💳 **Account Management** — create, query and delete bank accounts
-- 💸 **Transfers** — transactional money transfers with rollback protection
-- 📜 **Transaction History** — paginated audit trail per account
-- ✅ **Input Validation** — clear error messages on bad requests
-- 🧪 **19 Tests** — unit + integration tests covering all business logic
-- 🐳 **Docker** — multi-stage build for lightweight production image
-- 🏗️ **Hexagonal Architecture** — clean separation of domain, application, and infrastructure
+- **JWT Authentication** — secure register and login endpoints
+- **Account Management** — create, query and delete bank accounts
+- **Transfers** — transactional money transfers with rollback protection
+- **Transaction History** — paginated audit trail per account
+- **Input Validation** — descriptive error messages on malformed requests
+- **19 Tests** — unit and integration tests covering all business logic
+- **Docker** — multi-stage build for a lightweight production image
+- **Hexagonal Architecture** — clean separation of domain, application and infrastructure layers
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -40,7 +40,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/main/java/com/gft/banking/
@@ -59,7 +59,7 @@ src/main/java/com/gft/banking/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Java 21
@@ -79,7 +79,7 @@ cd banking-api
 docker-compose up --build
 ```
 
-This starts both the app and a PostgreSQL database automatically.
+This starts both the application and a PostgreSQL database automatically.
 
 ### Run with Docker only
 
@@ -88,10 +88,11 @@ docker build -t banking-api .
 docker run -p 8080:8080 banking-api
 ```
 
-The API will start on `http://localhost:8080`
+The API will be available at `http://localhost:8080`.
 
-### H2 Console (dev only)
-Access the in-memory database at `http://localhost:8080/h2-console`
+### H2 Console (dev profile only)
+
+Access the in-memory database at `http://localhost:8080/h2-console`.
 
 | Field | Value |
 |---|---|
@@ -101,33 +102,36 @@ Access the in-memory database at `http://localhost:8080/h2-console`
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
-### 🔐 Auth
+### Authentication
+
 | Method | Endpoint | Description | Auth required |
 |---|---|---|---|
-| POST | `/api/auth/register` | Register a new user | ❌ |
-| POST | `/api/auth/login` | Login and get JWT token | ❌ |
+| POST | `/api/auth/register` | Register a new user | No |
+| POST | `/api/auth/login` | Login and receive a JWT token | No |
 
-### 💳 Accounts
+### Accounts
+
 | Method | Endpoint | Description | Auth required |
 |---|---|---|---|
-| POST | `/api/accounts` | Create a new account | ✅ |
-| GET | `/api/accounts` | Get all accounts | ✅ |
-| GET | `/api/accounts/{id}` | Get account by ID | ✅ |
-| DELETE | `/api/accounts/{id}` | Delete account (only if balance is 0) | ✅ |
+| POST | `/api/accounts` | Create a new account | Yes |
+| GET | `/api/accounts` | List all accounts | Yes |
+| GET | `/api/accounts/{id}` | Get account by ID | Yes |
+| DELETE | `/api/accounts/{id}` | Delete account (only if balance is 0) | Yes |
 
-### 💸 Transfers
+### Transfers
+
 | Method | Endpoint | Description | Auth required |
 |---|---|---|---|
-| POST | `/api/transfers` | Make a transfer | ✅ |
-| GET | `/api/transfers/history/{accountId}?page=0&size=10` | Get paginated account history | ✅ |
+| POST | `/api/transfers` | Execute a transfer | Yes |
+| GET | `/api/transfers/history/{accountId}?page=0&size=10` | Get paginated transaction history | Yes |
 
 ---
 
-## 🔑 Authentication
+## Authentication
 
-Register and get your token:
+Register and obtain a token:
 
 ```http
 POST /api/auth/register
@@ -146,14 +150,14 @@ Response:
 }
 ```
 
-Use the token in subsequent requests:
+Include the token in subsequent requests:
 ```http
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 ```
 
 ---
 
-## 💸 Transfer Example
+## Transfer Example
 
 ```http
 POST /api/transfers
@@ -169,52 +173,52 @@ Content-Type: application/json
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ```bash
 ./mvnw test
 ```
 
-| Test class | Tests | Status |
-|---|---|---|
-| `AccountServiceTest` | 6 | ✅ |
-| `TransferServiceTest` | 7 | ✅ |
-| `AccountIntegrationTest` | 5 | ✅ |
-| `BankingApplicationTests` | 1 | ✅ |
-| **Total** | **19** | ✅ |
+| Test class | Tests |
+|---|---|
+| `AccountServiceTest` | 6 |
+| `TransferServiceTest` | 7 |
+| `AccountIntegrationTest` | 5 |
+| `BankingApplicationTests` | 1 |
+| **Total** | **19** |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 This project follows **Hexagonal Architecture** (Ports & Adapters):
 
 ```
 HTTP Request
-     ↓
+     |
 Controller (api layer)
-     ↓
+     |
 Service (application layer)
-     ↓
+     |
 Repository interface (domain port)
-     ↓
+     |
 JPA Repository (infrastructure adapter)
-     ↓
+     |
 Database (H2 / PostgreSQL)
 ```
 
 ---
 
-## 🔒 Security Notes
+## Security
 
-- Passwords are hashed with **BCrypt** — never stored in plain text
-- JWT tokens expire after **24 hours**
-- All endpoints except `/api/auth/**` require a valid Bearer token
-- Sessions are **stateless** — no server-side session storage
+- Passwords are hashed with **BCrypt** and never stored in plain text.
+- JWT tokens expire after **24 hours**.
+- All endpoints except `/api/auth/**` require a valid Bearer token.
+- Sessions are **stateless** — no server-side session storage.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Pau López Núñez**  
 Junior Backend Developer @ GFT Technologies SE  
@@ -222,4 +226,4 @@ Junior Backend Developer @ GFT Technologies SE
 
 ---
 
-*Built as part of GFT Junior Training Programme 2026 — Backend track*
+*Built as part of the GFT Junior Training Programme 2026 — Backend track.*
