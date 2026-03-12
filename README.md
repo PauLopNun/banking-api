@@ -1,3 +1,5 @@
+![CI](https://github.com/PauLopNun/banking-api/actions/workflows/ci.yml/badge.svg)
+
 # 🏦 Banking API
 
 A production-ready REST API for banking operations built with **Spring Boot 3.5** and **Java 21**.  
@@ -8,11 +10,12 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 ## ✨ Features
 
 - 🔐 **JWT Authentication** — secure register & login
-- 💳 **Account Management** — create and query bank accounts
+- 💳 **Account Management** — create, query and delete bank accounts
 - 💸 **Transfers** — transactional money transfers with rollback protection
-- 📜 **Transaction History** — full audit trail per account
+- 📜 **Transaction History** — paginated audit trail per account
 - ✅ **Input Validation** — clear error messages on bad requests
-- 🧪 **Unit Tests** — 11 tests with Mockito covering all business logic
+- 🧪 **18 Tests** — unit + integration tests covering all business logic
+- 🐳 **Docker** — multi-stage build for lightweight production image
 - 🏗️ **Hexagonal Architecture** — clean separation of domain, application, and infrastructure
 
 ---
@@ -28,13 +31,14 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 | Database | H2 (in-memory) |
 | Validation | Jakarta Bean Validation |
 | Boilerplate reduction | Lombok |
-| Testing | JUnit 5 + Mockito |
+| Testing | JUnit 5 + Mockito + SpringBootTest |
 | Build tool | Maven |
+| Containerization | Docker (multi-stage) |
+| CI | GitHub Actions |
 
 ---
 
 ## 📁 Project Structure
-
 ```
 src/main/java/com/gft/banking/
 ├── domain/
@@ -58,12 +62,17 @@ src/main/java/com/gft/banking/
 - Java 21
 - Maven 3.8+
 
-### Run the application
-
+### Run locally
 ```bash
 git clone https://github.com/PauLopNun/banking-api.git
 cd banking-api
 ./mvnw spring-boot:run
+```
+
+### Run with Docker
+```bash
+docker build -t banking-api .
+docker run -p 8080:8080 banking-api
 ```
 
 The API will start on `http://localhost:8080`
@@ -93,19 +102,19 @@ Access the in-memory database at `http://localhost:8080/h2-console`
 | POST | `/api/accounts` | Create a new account | ✅ |
 | GET | `/api/accounts` | Get all accounts | ✅ |
 | GET | `/api/accounts/{id}` | Get account by ID | ✅ |
+| DELETE | `/api/accounts/{id}` | Delete account (only if balance is 0) | ✅ |
 
 ### 💸 Transfers
 | Method | Endpoint | Description | Auth required |
 |---|---|---|---|
 | POST | `/api/transfers` | Make a transfer | ✅ |
-| GET | `/api/transfers/history/{accountId}` | Get account history | ✅ |
+| GET | `/api/transfers/history/{accountId}?page=0&size=10` | Get paginated account history | ✅ |
 
 ---
 
 ## 🔑 Authentication
 
 Register and get your token:
-
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -131,7 +140,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 ---
 
 ## 💸 Transfer Example
-
 ```http
 POST /api/transfers
 Authorization: Bearer <token>
@@ -144,45 +152,25 @@ Content-Type: application/json
 }
 ```
 
-Response:
-```json
-{
-  "id": 1,
-  "fromAccountId": 1,
-  "fromAccountOwner": "Pau López",
-  "toAccountId": 2,
-  "toAccountOwner": "Ivan Carmona",
-  "amount": 200.00,
-  "createdAt": "2026-03-12T12:40:52"
-}
-```
-
 ---
 
 ## 🧪 Running Tests
-
 ```bash
 ./mvnw test
 ```
 
-Current test coverage:
-
 | Test class | Tests | Status |
 |---|---|---|
-| `AccountServiceTest` | 4 | ✅ |
+| `AccountServiceTest` | 6 | ✅ |
 | `TransferServiceTest` | 7 | ✅ |
+| `AccountIntegrationTest` | 5 | ✅ |
+| **Total** | **18** | ✅ |
 
 ---
 
 ## 🏗️ Architecture
 
 This project follows **Hexagonal Architecture** (Ports & Adapters):
-
-- The **domain** layer has zero dependencies on frameworks or databases
-- **Services** orchestrate business logic and only depend on interfaces
-- **Controllers** handle HTTP and delegate everything to services
-- **Repositories** are the only layer that touches the database
-
 ```
 HTTP Request
      ↓
@@ -205,15 +193,6 @@ Database
 - JWT tokens expire after **24 hours**
 - All endpoints except `/api/auth/**` require a valid Bearer token
 - Sessions are **stateless** — no server-side session storage
-
----
-
-## 📌 Roadmap
-
-- [ ] Pagination for transfer history
-- [ ] Integration tests with `@SpringBootTest`
-- [ ] Dockerize with multi-stage build
-- [ ] CI/CD pipeline with GitHub Actions
 
 ---
 
