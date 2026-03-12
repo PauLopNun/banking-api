@@ -14,7 +14,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 - 💸 **Transfers** — transactional money transfers with rollback protection
 - 📜 **Transaction History** — paginated audit trail per account
 - ✅ **Input Validation** — clear error messages on bad requests
-- 🧪 **18 Tests** — unit + integration tests covering all business logic
+- 🧪 **19 Tests** — unit + integration tests covering all business logic
 - 🐳 **Docker** — multi-stage build for lightweight production image
 - 🏗️ **Hexagonal Architecture** — clean separation of domain, application, and infrastructure
 
@@ -28,17 +28,20 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 | Framework | Spring Boot 3.5.11 |
 | Security | Spring Security + JWT (jjwt 0.12.6) |
 | Persistence | Spring Data JPA + Hibernate 6 |
-| Database | H2 (in-memory) |
+| Database (dev) | H2 (in-memory) |
+| Database (prod) | PostgreSQL 16 |
+| Profiles | dev (H2) / prod (PostgreSQL) |
 | Validation | Jakarta Bean Validation |
 | Boilerplate reduction | Lombok |
 | Testing | JUnit 5 + Mockito + SpringBootTest |
 | Build tool | Maven |
-| Containerization | Docker (multi-stage) |
+| Containerization | Docker (multi-stage) + Docker Compose |
 | CI | GitHub Actions |
 
 ---
 
 ## 📁 Project Structure
+
 ```
 src/main/java/com/gft/banking/
 ├── domain/
@@ -62,14 +65,24 @@ src/main/java/com/gft/banking/
 - Java 21
 - Maven 3.8+
 
-### Run locally
+### Run locally (dev profile — H2)
+
 ```bash
 git clone https://github.com/PauLopNun/banking-api.git
 cd banking-api
 ./mvnw spring-boot:run
 ```
 
-### Run with Docker
+### Run with Docker Compose (recommended — PostgreSQL)
+
+```bash
+docker-compose up --build
+```
+
+This starts both the app and a PostgreSQL database automatically.
+
+### Run with Docker only
+
 ```bash
 docker build -t banking-api .
 docker run -p 8080:8080 banking-api
@@ -77,7 +90,7 @@ docker run -p 8080:8080 banking-api
 
 The API will start on `http://localhost:8080`
 
-### H2 Console
+### H2 Console (dev only)
 Access the in-memory database at `http://localhost:8080/h2-console`
 
 | Field | Value |
@@ -115,6 +128,7 @@ Access the in-memory database at `http://localhost:8080/h2-console`
 ## 🔑 Authentication
 
 Register and get your token:
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -140,6 +154,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 ---
 
 ## 💸 Transfer Example
+
 ```http
 POST /api/transfers
 Authorization: Bearer <token>
@@ -155,6 +170,7 @@ Content-Type: application/json
 ---
 
 ## 🧪 Running Tests
+
 ```bash
 ./mvnw test
 ```
@@ -164,13 +180,15 @@ Content-Type: application/json
 | `AccountServiceTest` | 6 | ✅ |
 | `TransferServiceTest` | 7 | ✅ |
 | `AccountIntegrationTest` | 5 | ✅ |
-| **Total** | **18** | ✅ |
+| `BankingApplicationTests` | 1 | ✅ |
+| **Total** | **19** | ✅ |
 
 ---
 
 ## 🏗️ Architecture
 
 This project follows **Hexagonal Architecture** (Ports & Adapters):
+
 ```
 HTTP Request
      ↓
@@ -182,7 +200,7 @@ Repository interface (domain port)
      ↓
 JPA Repository (infrastructure adapter)
      ↓
-Database
+Database (H2 / PostgreSQL)
 ```
 
 ---
