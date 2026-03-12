@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -68,5 +69,38 @@ class AccountServiceTest {
         assertThatThrownBy(() -> accountService.getAccountById(99L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("no encontrada");
+    }
+
+    @Test
+    void shouldDeleteAccountSuccessfully() {
+        // Arrange
+        Account emptyAccount = Account.builder()
+                .id(1L)
+                .ownerName("Pau López")
+                .balance(BigDecimal.ZERO)
+                .build();
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(emptyAccount));
+
+        // Act & Assert
+        assertThatCode(() -> accountService.deleteAccount(1L))
+                .doesNotThrowAnyException();
+        verify(accountRepository).deleteById(1L);
+    }
+
+    @Test
+    void shouldThrowWhenDeletingAccountWithBalance() {
+        // Arrange
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(
+                Account.builder()
+                        .id(1L)
+                        .ownerName("Pau López")
+                        .balance(new BigDecimal("500"))
+                        .build()
+        ));
+
+        // Act & Assert
+        assertThatThrownBy(() -> accountService.deleteAccount(1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("saldo");
     }
 }

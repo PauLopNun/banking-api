@@ -1,6 +1,7 @@
 package com.gft.banking.api.controller;
 
 import com.gft.banking.api.dto.AuthDTO;
+import com.gft.banking.application.service.AccountService;
 import com.gft.banking.application.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

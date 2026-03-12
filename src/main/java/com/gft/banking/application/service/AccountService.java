@@ -37,4 +37,15 @@ public class AccountService {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
     }
+
+    public void deleteAccount(Long id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
+
+        if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalArgumentException("No puedes eliminar una cuenta con saldo");
+        }
+
+        accountRepository.deleteById(id);
+    }
 }

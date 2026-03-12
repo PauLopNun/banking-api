@@ -5,6 +5,8 @@ import com.gft.banking.domain.model.Transfer;
 import com.gft.banking.infrastructure.persistence.AccountRepository;
 import com.gft.banking.infrastructure.persistence.TransferRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -52,7 +54,7 @@ public class TransferService {
     }
 
     @Transactional(readOnly = true)
-    public List<Transfer> getAccountHistory(Long accountId) {
-        return transferRepository.findAccountHistory(accountId);
+    public Page<Transfer> getAccountHistory(Long accountId, Pageable pageable) {
+        return transferRepository.findAccountHistory(accountId, pageable);
     }
 }

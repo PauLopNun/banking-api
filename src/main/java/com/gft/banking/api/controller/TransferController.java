@@ -5,10 +5,12 @@ import com.gft.banking.application.service.TransferService;
 import com.gft.banking.domain.model.Transfer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/transfers")
@@ -28,11 +30,13 @@ public class TransferController {
     }
 
     @GetMapping("/history/{accountId}")
-    public ResponseEntity<List<TransferDTO>> getHistory(@PathVariable Long accountId) {
-        List<TransferDTO> history = transferService.getAccountHistory(accountId)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+    public ResponseEntity<Page<TransferDTO>> getHistory(
+            @PathVariable Long accountId,
+            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+
+        Page<TransferDTO> history = transferService.getAccountHistory(accountId, pageable)
+                .map(this::toDTO);
+
         return ResponseEntity.ok(history);
     }
 
