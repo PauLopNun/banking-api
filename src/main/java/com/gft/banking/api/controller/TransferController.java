@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,11 +22,15 @@ public class TransferController {
     private final TransferService transferService;
 
     @PostMapping
-    public ResponseEntity<TransferDTO> transfer(@Valid @RequestBody TransferDTO.TransferRequest request) {
+    public ResponseEntity<TransferDTO> transfer(
+            @Valid @RequestBody TransferDTO.TransferRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
         Transfer transfer = transferService.transfer(
                 request.getFromAccountId(),
                 request.getToAccountId(),
-                request.getAmount()
+                request.getAmount(),
+                userDetails.getUsername()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(transfer));
     }
@@ -32,9 +38,10 @@ public class TransferController {
     @GetMapping("/history/{accountId}")
     public ResponseEntity<Page<TransferDTO>> getHistory(
             @PathVariable Long accountId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
 
-        Page<TransferDTO> history = transferService.getAccountHistory(accountId, pageable)
+        Page<TransferDTO> history = transferService.getAccountHistory(accountId, pageable, userDetails.getUsername())
                 .map(this::toDTO);
 
         return ResponseEntity.ok(history);

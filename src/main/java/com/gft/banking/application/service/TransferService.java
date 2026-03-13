@@ -2,15 +2,16 @@ package com.gft.banking.application.service;
 
 import com.gft.banking.domain.model.Account;
 import com.gft.banking.domain.model.Transfer;
+import com.gft.banking.domain.model.User;
 import com.gft.banking.infrastructure.persistence.AccountRepository;
 import com.gft.banking.infrastructure.persistence.TransferRepository;
+import com.gft.banking.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +19,10 @@ public class TransferService {
 
     private final AccountRepository accountRepository;
     private final TransferRepository transferRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public Transfer transfer(Long fromAccountId, Long toAccountId, BigDecimal amount) {
+    public Transfer transfer(Long fromAccountId, Long toAccountId, BigDecimal amount, String username) {
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("El importe debe ser mayor que cero");
@@ -30,7 +32,10 @@ public class TransferService {
             throw new IllegalArgumentException("No puedes transferir a tu propia cuenta");
         }
 
-        Account fromAccount = accountRepository.findById(fromAccountId)
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        Account fromAccount = accountRepository.findByIdAndOwner(fromAccountId, owner)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta origen no encontrada"));
 
         Account toAccount = accountRepository.findById(toAccountId)
@@ -54,7 +59,13 @@ public class TransferService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Transfer> getAccountHistory(Long accountId, Pageable pageable) {
+    public Page<Transfer> getAccountHistory(Long accountId, Pageable pageable, String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        accountRepository.findByIdAndOwner(accountId, owner)
+                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + accountId));
+
         return transferRepository.findAccountHistory(accountId, pageable);
     }
 }

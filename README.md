@@ -10,11 +10,14 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 ## Features
 
 - **JWT Authentication** — secure register and login endpoints
-- **Account Management** — create, query and delete bank accounts
+- **Refresh Tokens** — token rotation for session renewal
+- **Account Management** — create, query and delete bank accounts scoped to the authenticated user
 - **Transfers** — transactional money transfers with rollback protection
-- **Transaction History** — paginated audit trail per account
+- **Transaction History** — paginated audit trail per account with owner access control
 - **Input Validation** — descriptive error messages on malformed requests
-- **19 Tests** — unit and integration tests covering all business logic
+- **Rate Limiting** — per-IP protection (60 requests/minute) using Bucket4j
+- **Swagger / OpenAPI** — interactive API documentation at runtime
+- **36 Tests** — unit and integration tests covering business and security paths
 - **Docker** — multi-stage build for a lightweight production image
 - **Hexagonal Architecture** — clean separation of domain, application and infrastructure layers
 
@@ -110,6 +113,7 @@ Access the in-memory database at `http://localhost:8080/h2-console`.
 |---|---|---|---|
 | POST | `/api/auth/register` | Register a new user | No |
 | POST | `/api/auth/login` | Login and receive a JWT token | No |
+| POST | `/api/auth/refresh` | Rotate refresh token and obtain a new access token | No |
 
 ### Accounts
 
@@ -146,7 +150,8 @@ Content-Type: application/json
 Response:
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9..."
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "refreshToken": "9f96f4a4-..."
 }
 ```
 
@@ -182,10 +187,19 @@ Content-Type: application/json
 | Test class | Tests |
 |---|---|
 | `AccountServiceTest` | 6 |
-| `TransferServiceTest` | 7 |
-| `AccountIntegrationTest` | 5 |
+| `TransferServiceTest` | 8 |
+| `AccountIntegrationTest` | 6 |
+| `TransferIntegrationTest` | 7 |
+| `RefreshTokenServiceTest` | 4 |
+| `RateLimitInterceptorTest` | 1 |
+| `AuthIntegrationTest` | 3 |
 | `BankingApplicationTests` | 1 |
-| **Total** | **19** |
+| **Total** | **36** |
+
+## API Documentation
+
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 ---
 
@@ -213,6 +227,8 @@ Database (H2 / PostgreSQL)
 
 - Passwords are hashed with **BCrypt** and never stored in plain text.
 - JWT tokens expire after **24 hours**.
+- Refresh tokens are rotated and invalidated on each refresh operation.
+- Rate limiting applies to `/api/**` with per-IP buckets.
 - All endpoints except `/api/auth/**` require a valid Bearer token.
 - Sessions are **stateless** — no server-side session storage.
 

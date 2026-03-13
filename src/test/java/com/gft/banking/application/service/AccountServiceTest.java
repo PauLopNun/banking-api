@@ -45,8 +45,8 @@ class AccountServiceTest {
         BigDecimal balance = new BigDecimal("1000");
         User user = mockUser();
 
-        when(accountRepository.existsByOwnerName(ownerName)).thenReturn(false);
         when(userRepository.findByUsername("pau")).thenReturn(Optional.of(user));
+        when(accountRepository.existsByOwnerNameAndOwner(ownerName, user)).thenReturn(false);
         when(accountRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         Account result = accountService.createAccount(ownerName, balance, "pau");
@@ -67,7 +67,9 @@ class AccountServiceTest {
 
     @Test
     void shouldThrowExceptionWhenOwnerAlreadyExists() {
-        when(accountRepository.existsByOwnerName("Pau López")).thenReturn(true);
+        User user = mockUser();
+        when(userRepository.findByUsername("pau")).thenReturn(Optional.of(user));
+        when(accountRepository.existsByOwnerNameAndOwner("Pau López", user)).thenReturn(true);
 
         assertThatThrownBy(() ->
                 accountService.createAccount("Pau López", new BigDecimal("500"), "pau"))

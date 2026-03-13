@@ -20,12 +20,12 @@ public class AccountService {
         if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El saldo inicial no puede ser negativo");
         }
-        if (accountRepository.existsByOwnerName(ownerName)) {
-            throw new IllegalArgumentException("Ya existe una cuenta con ese titular");
-        }
-
         User owner = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        if (accountRepository.existsByOwnerNameAndOwner(ownerName, owner)) {
+            throw new IllegalArgumentException("Ya existe una cuenta con ese titular");
+        }
 
         Account account = Account.builder()
                 .ownerName(ownerName)
