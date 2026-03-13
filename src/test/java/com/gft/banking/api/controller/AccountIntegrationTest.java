@@ -30,13 +30,18 @@ class AccountIntegrationTest {
     private ObjectMapper objectMapper;
 
     private String token;
+    private String otherToken;
 
     @BeforeEach
     void setUp() throws Exception {
-        // Registramos un usuario y obtenemos el token antes de cada test
+        token = registerAndGetToken("testuser", "1234");
+        otherToken = registerAndGetToken("otheruser", "1234");
+    }
+
+    private String registerAndGetToken(String username, String password) throws Exception {
         AuthDTO.AuthRequest authRequest = new AuthDTO.AuthRequest();
-        authRequest.setUsername("testuser");
-        authRequest.setPassword("1234");
+        authRequest.setUsername(username);
+        authRequest.setPassword(password);
 
         MvcResult result = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -44,8 +49,8 @@ class AccountIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String response = result.getResponse().getContentAsString();
-        token = objectMapper.readTree(response).get("token").asText();
+        return objectMapper.readTree(result.getResponse().getContentAsString())
+                .get("token").asText();
     }
 
     @Test
@@ -84,8 +89,7 @@ class AccountIntegrationTest {
     }
 
     @Test
-    void shouldReturnAllAccounts() throws Exception {
-        // Creamos una cuenta primero
+    void shouldReturnOnlyAccountsOfAuthenticatedUser() throws Exception {
         AccountDTO.CreateAccountRequest request = new AccountDTO.CreateAccountRequest();
         request.setOwnerName("Pau López");
         request.setInitialBalance(new BigDecimal("1000"));
@@ -96,7 +100,13 @@ class AccountIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        // Luego la consultamos
+        // otheruser no debe ver la cuenta de testuser
+        mockMvc.perform(get("/api/accounts")
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        // testuser sí la ve
         mockMvc.perform(get("/api/accounts")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
@@ -105,8 +115,29 @@ class AccountIntegrationTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenAccessingAnotherUsersAccount() throws Exception {
+        AccountDTO.CreateAccountRequest request = new AccountDTO.CreateAccountRequest();
+        request.setOwnerName("Cuenta de Pau");
+        request.setInitialBalance(new BigDecimal("500"));
+
+        MvcResult result = mockMvc.perform(post("/api/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long id = objectMapper.readTree(result.getResponse().getContentAsString())
+                .get("id").asLong();
+
+        // otheruser intenta acceder — debe recibir error
+        mockMvc.perform(get("/api/accounts/" + id)
+                        .header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void shouldDeleteAccountWithZeroBalance() throws Exception {
-        // Creamos cuenta con saldo 0
         AccountDTO.CreateAccountRequest request = new AccountDTO.CreateAccountRequest();
         request.setOwnerName("Cuenta temporal");
         request.setInitialBalance(BigDecimal.ZERO);
@@ -121,7 +152,6 @@ class AccountIntegrationTest {
         Long id = objectMapper.readTree(result.getResponse().getContentAsString())
                 .get("id").asLong();
 
-        // La borramos
         mockMvc.perform(delete("/api/accounts/" + id)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());

@@ -1,7 +1,9 @@
 package com.gft.banking.application.service;
 
 import com.gft.banking.domain.model.Account;
+import com.gft.banking.domain.model.User;
 import com.gft.banking.infrastructure.persistence.AccountRepository;
+import com.gft.banking.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -12,8 +14,9 @@ import java.util.List;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
 
-    public Account createAccount(String ownerName, BigDecimal initialBalance) {
+    public Account createAccount(String ownerName, BigDecimal initialBalance, String username) {
         if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El saldo inicial no puede ser negativo");
         }
@@ -21,25 +24,36 @@ public class AccountService {
             throw new IllegalArgumentException("Ya existe una cuenta con ese titular");
         }
 
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
         Account account = Account.builder()
                 .ownerName(ownerName)
                 .balance(initialBalance)
+                .owner(owner)
                 .build();
 
         return accountRepository.save(account);
     }
 
-    public List<Account> getAllAccounts() {
-        return accountRepository.findAll();
+    public List<Account> getAllAccounts(String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return accountRepository.findByOwner(owner);
     }
 
-    public Account getAccountById(Long id) {
-        return accountRepository.findById(id)
+    public Account getAccountById(Long id, String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        return accountRepository.findByIdAndOwner(id, owner)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
     }
 
-    public void deleteAccount(Long id) {
-        Account account = accountRepository.findById(id)
+    public void deleteAccount(Long id, String username) {
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        Account account = accountRepository.findByIdAndOwner(id, owner)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {

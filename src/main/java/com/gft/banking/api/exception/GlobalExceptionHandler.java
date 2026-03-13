@@ -53,4 +53,16 @@ public class GlobalExceptionHandler {
                         "message", "Ha ocurrido un error inesperado"
                 ));
     }
+
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(Exception ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of(
+                        "timestamp", LocalDateTime.now(),
+                        "status", 401,
+                        "error", "Unauthorized",
+                        "message", "Credenciales incorrectas"
+                ));
+    }
 }

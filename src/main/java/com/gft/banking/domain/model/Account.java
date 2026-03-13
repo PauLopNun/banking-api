@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.gft.banking.domain.model.User;
 
 @Entity // le dice a JPA que esta clase es una tabla en BD
 @Table(name = "accounts") // nombre de la tabla en BD
@@ -31,4 +32,8 @@ public class Account {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 }
