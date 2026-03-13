@@ -37,8 +37,9 @@ class TransferIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        tokenA = registerAndGetToken("userA", "1234");
-        tokenB = registerAndGetToken("userB", "1234");
+        String suffix = String.valueOf(System.nanoTime());
+        tokenA = registerAndGetToken("userA-" + suffix, "1234");
+        tokenB = registerAndGetToken("userB-" + suffix, "1234");
         accountAId = createAccount(tokenA, "Cuenta A", new BigDecimal("1000"));
         accountBId = createAccount(tokenB, "Cuenta B", new BigDecimal("500"));
     }

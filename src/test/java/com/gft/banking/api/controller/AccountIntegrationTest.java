@@ -34,8 +34,9 @@ class AccountIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        token = registerAndGetToken("testuser", "1234");
-        otherToken = registerAndGetToken("otheruser", "1234");
+        String suffix = String.valueOf(System.nanoTime());
+        token = registerAndGetToken("testuser-" + suffix, "1234");
+        otherToken = registerAndGetToken("otheruser-" + suffix, "1234");
     }
 
     private String registerAndGetToken(String username, String password) throws Exception {
