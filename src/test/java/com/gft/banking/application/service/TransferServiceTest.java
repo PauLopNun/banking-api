@@ -1,5 +1,6 @@
 package com.gft.banking.application.service;
 
+import com.gft.banking.api.exception.ResourceNotFoundException;
 import com.gft.banking.domain.model.Account;
 import com.gft.banking.domain.model.Transfer;
 import com.gft.banking.domain.model.User;
@@ -121,7 +122,7 @@ class TransferServiceTest {
         when(accountRepository.findByIdAndOwner(99L, user)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> transferService.transfer(99L, 2L, new BigDecimal("100"), "pau"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("origen no encontrada");
     }
 
@@ -132,7 +133,7 @@ class TransferServiceTest {
         when(accountRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> transferService.transfer(1L, 99L, new BigDecimal("100"), "pau"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("destino no encontrada");
     }
 
@@ -142,7 +143,7 @@ class TransferServiceTest {
         when(accountRepository.findByIdAndOwner(1L, user)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> transferService.transfer(1L, 2L, new BigDecimal("100"), "pau"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("origen no encontrada");
     }
 }

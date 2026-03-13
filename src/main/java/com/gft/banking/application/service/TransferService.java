@@ -1,5 +1,6 @@
 package com.gft.banking.application.service;
 
+import com.gft.banking.api.exception.ResourceNotFoundException;
 import com.gft.banking.domain.model.Account;
 import com.gft.banking.domain.model.Transfer;
 import com.gft.banking.domain.model.User;
@@ -33,13 +34,13 @@ public class TransferService {
         }
 
         User owner = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         Account fromAccount = accountRepository.findByIdAndOwner(fromAccountId, owner)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta origen no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta origen no encontrada"));
 
         Account toAccount = accountRepository.findById(toAccountId)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta destino no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta destino no encontrada"));
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente");
@@ -61,10 +62,10 @@ public class TransferService {
     @Transactional(readOnly = true)
     public Page<Transfer> getAccountHistory(Long accountId, Pageable pageable, String username) {
         User owner = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         accountRepository.findByIdAndOwner(accountId, owner)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + accountId));
 
         return transferRepository.findAccountHistory(accountId, pageable);
     }

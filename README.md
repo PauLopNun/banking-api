@@ -17,7 +17,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 - **Input Validation** — descriptive error messages on malformed requests
 - **Rate Limiting** — per-IP protection (60 requests/minute) using Bucket4j
 - **Swagger / OpenAPI** — interactive API documentation at runtime
-- **36 Tests** — unit and integration tests covering business and security paths
+- **37 Tests** — unit and integration tests covering business and security paths
 - **Docker** — multi-stage build for a lightweight production image
 - **Hexagonal Architecture** — clean separation of domain, application and infrastructure layers
 
@@ -191,10 +191,10 @@ Content-Type: application/json
 | `AccountIntegrationTest` | 6 |
 | `TransferIntegrationTest` | 7 |
 | `RefreshTokenServiceTest` | 4 |
-| `RateLimitInterceptorTest` | 1 |
+| `RateLimitInterceptorTest` | 2 |
 | `AuthIntegrationTest` | 3 |
 | `BankingApplicationTests` | 1 |
-| **Total** | **36** |
+| **Total** | **37** |
 
 ## API Documentation
 
@@ -229,6 +229,7 @@ Database (H2 / PostgreSQL)
 - JWT tokens expire after **24 hours**.
 - Refresh tokens are rotated and invalidated on each refresh operation.
 - Rate limiting applies to `/api/**` with per-IP buckets.
+- Account updates use optimistic locking to prevent lost updates under concurrent transfers.
 - All endpoints except `/api/auth/**` require a valid Bearer token.
 - Sessions are **stateless** — no server-side session storage.
 

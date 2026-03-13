@@ -133,7 +133,7 @@ class AccountIntegrationTest {
         // otheruser intenta acceder — debe recibir error
         mockMvc.perform(get("/api/accounts/" + id)
                         .header("Authorization", "Bearer " + otherToken))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test

@@ -166,7 +166,7 @@ class TransferIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + tokenB)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Cuenta origen no encontrada"));
     }
 
@@ -174,7 +174,7 @@ class TransferIntegrationTest {
     void shouldReturnBadRequestWhenGettingAnotherUsersHistory() throws Exception {
         mockMvc.perform(get("/api/transfers/history/" + accountAId)
                         .header("Authorization", "Bearer " + tokenB))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Cuenta no encontrada con id: " + accountAId));
     }
 }

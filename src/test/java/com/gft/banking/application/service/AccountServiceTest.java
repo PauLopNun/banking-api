@@ -1,5 +1,6 @@
 package com.gft.banking.application.service;
 
+import com.gft.banking.api.exception.ResourceNotFoundException;
 import com.gft.banking.domain.model.Account;
 import com.gft.banking.domain.model.User;
 import com.gft.banking.infrastructure.persistence.AccountRepository;
@@ -84,7 +85,7 @@ class AccountServiceTest {
         when(accountRepository.findByIdAndOwner(99L, user)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> accountService.getAccountById(99L, "pau"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("no encontrada");
     }
 

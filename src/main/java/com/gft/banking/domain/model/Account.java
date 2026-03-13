@@ -25,6 +25,9 @@ public class Account {
     @Column(nullable = false)
     private BigDecimal balance;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

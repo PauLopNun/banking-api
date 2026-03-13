@@ -1,5 +1,6 @@
 package com.gft.banking.application.service;
 
+import com.gft.banking.api.exception.ResourceNotFoundException;
 import com.gft.banking.domain.model.Account;
 import com.gft.banking.domain.model.User;
 import com.gft.banking.infrastructure.persistence.AccountRepository;
@@ -46,7 +47,7 @@ public class AccountService {
         User owner = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         return accountRepository.findByIdAndOwner(id, owner)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
     }
 
     public void deleteAccount(Long id, String username) {
@@ -54,7 +55,7 @@ public class AccountService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         Account account = accountRepository.findByIdAndOwner(id, owner)
-                .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
             throw new IllegalArgumentException("No puedes eliminar una cuenta con saldo");
