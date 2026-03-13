@@ -1,5 +1,6 @@
 package com.gft.banking.application.service;
 
+import com.gft.banking.domain.model.RefreshToken;
 import com.gft.banking.domain.model.User;
 import com.gft.banking.infrastructure.persistence.UserRepository;
 import com.gft.banking.infrastructure.security.JwtService;
@@ -17,8 +18,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
-    public String register(String username, String password) {
+    public AuthLoginResponse register(String username, String password) {
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("El usuario ya existe");
         }
@@ -30,13 +32,29 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        return jwtService.generateToken(username);
+
+        String accessToken = jwtService.generateToken(username);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(username);
+
+        return new AuthLoginResponse(accessToken, refreshToken.getToken());
     }
 
-    public String login(String username, String password) {
+    public AuthLoginResponse login(String username, String password) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
         );
-        return jwtService.generateToken(username);
+
+        String accessToken = jwtService.generateToken(username);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(username);
+
+        return new AuthLoginResponse(accessToken, refreshToken.getToken());
     }
+
+    public AuthLoginResponse refresh(String token) {
+        RefreshToken rotated = refreshTokenService.rotateRefreshToken(token);
+        String accessToken = jwtService.generateToken(rotated.getUser().getUsername());
+        return new AuthLoginResponse(accessToken, rotated.getToken());
+    }
+
+    public record AuthLoginResponse(String accessToken, String refreshToken) {}
 }

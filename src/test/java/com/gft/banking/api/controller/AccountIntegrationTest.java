@@ -50,7 +50,7 @@ class AccountIntegrationTest {
                 .andReturn();
 
         return objectMapper.readTree(result.getResponse().getContentAsString())
-                .get("token").asText();
+                .get("accessToken").asText();
     }
 
     @Test
