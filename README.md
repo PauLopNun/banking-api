@@ -17,6 +17,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 - **Input Validation** — descriptive error messages on malformed requests
 - **Rate Limiting** — per-IP protection (60 requests/minute) using Bucket4j
 - **Swagger / OpenAPI** — interactive API documentation at runtime
+- **Flyway Migrations** — versioned schema management across environments
 - **37 Tests** — unit and integration tests covering business and security paths
 - **Docker** — multi-stage build for a lightweight production image
 - **Hexagonal Architecture** — clean separation of domain, application and infrastructure layers
@@ -31,6 +32,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 | Framework | Spring Boot 3.5.11 |
 | Security | Spring Security + JWT (jjwt 0.12.6) |
 | Persistence | Spring Data JPA + Hibernate 6 |
+| Database migrations | Flyway |
 | Database (dev) | H2 (in-memory) |
 | Database (prod) | PostgreSQL 16 |
 | Profiles | dev (H2) / prod (PostgreSQL) |
@@ -195,6 +197,12 @@ Content-Type: application/json
 | `AuthIntegrationTest` | 3 |
 | `BankingApplicationTests` | 1 |
 | **Total** | **37** |
+
+## Database Migrations
+
+- Flyway runs automatically on startup.
+- Migration files live in `src/main/resources/db/migration`.
+- Current baseline schema: `V1__init_schema.sql`.
 
 ## API Documentation
 
