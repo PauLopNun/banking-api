@@ -15,7 +15,7 @@ Developed as part of the **GFT Junior Training Programme 2026**.
 - **Transfers** — transactional money transfers with rollback protection
 - **Transaction History** — paginated audit trail per account with owner access control
 - **Input Validation** — descriptive error messages on malformed requests
-- **Rate Limiting** — per-IP protection (60 requests/minute) using Bucket4j
+- **Rate Limiting** — per-IP protection (configurable, default 60 req/min) using Bucket4j with `Retry-After` and `X-Rate-Limit-Remaining` headers
 - **Swagger / OpenAPI** — interactive API documentation at runtime
 - **Flyway Migrations** — versioned schema management across environments
 - **37 Tests** — unit and integration tests covering business and security paths
@@ -75,8 +75,13 @@ src/main/java/com/gft/banking/
 ```bash
 git clone https://github.com/PauLopNun/banking-api.git
 cd banking-api
-./mvnw spring-boot:run
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+> **Windows (PowerShell):**
+> ```powershell
+> .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
+> ```
 
 ### Run with Docker Compose (recommended — PostgreSQL)
 
@@ -162,6 +167,42 @@ Include the token in subsequent requests:
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 ```
 
+### Refresh token
+
+When the access token expires, use the refresh token to obtain a new one:
+
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "9f96f4a4-..."
+}
+```
+
+Response:
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "refreshToken": "a3b7c1d2-..."
+}
+```
+
+> Refresh tokens are **rotated** on every use — the old token is invalidated immediately.
+
+---
+
+## HTTP Error Reference
+
+| Status | Meaning | When |
+|---|---|---|
+| `400 Bad Request` | Validation error or business rule violation | Missing fields, duplicate account name, negative amount |
+| `401 Unauthorized` | Bad credentials or missing/expired token | Wrong password, expired JWT |
+| `404 Not Found` | Resource does not exist or belongs to another user | Account ID not found, foreign account access |
+| `409 Conflict` | Concurrent modification detected | Two simultaneous transfers touching the same account |
+| `429 Too Many Requests` | Rate limit exceeded | More than 60 requests/minute from the same IP |
+| `500 Internal Server Error` | Unexpected server error | — |
+
 ---
 
 ## Transfer Example
@@ -203,6 +244,19 @@ Content-Type: application/json
 - Flyway runs automatically on startup.
 - Migration files live in `src/main/resources/db/migration`.
 - Current baseline schema: `V1__init_schema.sql`.
+
+## Rate Limiting Configuration
+
+Rate limiting can be tuned via `application.properties` (defaults shown):
+
+```properties
+rate.limit.capacity=60
+rate.limit.refill-tokens=60
+rate.limit.refill-duration-seconds=60
+```
+
+On every response, the header `X-Rate-Limit-Remaining` shows remaining tokens for that IP.  
+When the limit is exceeded the API returns `429 Too Many Requests` with a `Retry-After` header.
 
 ## API Documentation
 
