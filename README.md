@@ -75,6 +75,7 @@ src/main/java/com/gft/banking/
 ```bash
 git clone https://github.com/PauLopNun/banking-api.git
 cd banking-api
+export JWT_SECRET=<BASE64_SECRET>
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
@@ -86,6 +87,7 @@ cd banking-api
 ### Run with Docker Compose (recommended — PostgreSQL)
 
 ```bash
+export JWT_SECRET=<BASE64_SECRET>
 docker-compose up --build
 ```
 
@@ -288,6 +290,7 @@ Database (H2 / PostgreSQL)
 ## Security
 
 - Passwords are hashed with **BCrypt** and never stored in plain text.
+- JWT secret is loaded from the `JWT_SECRET` environment variable (Base64 encoded).
 - JWT tokens expire after **24 hours**.
 - Refresh tokens are rotated and invalidated on each refresh operation.
 - Rate limiting applies to `/api/**` with per-IP buckets.
