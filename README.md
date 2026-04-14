@@ -75,7 +75,7 @@ src/main/java/com/gft/banking/
 ```bash
 git clone https://github.com/PauLopNun/banking-api.git
 cd banking-api
-export JWT_SECRET=<BASE64_SECRET>
+export JWT_SECRET=$(openssl rand -base64 64)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
@@ -87,7 +87,7 @@ export JWT_SECRET=<BASE64_SECRET>
 ### Run with Docker Compose (recommended — PostgreSQL)
 
 ```bash
-export JWT_SECRET=<BASE64_SECRET>
+export JWT_SECRET=$(openssl rand -base64 64)
 docker-compose up --build
 ```
 
