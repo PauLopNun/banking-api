@@ -2,6 +2,7 @@ package com.gft.banking.infrastructure.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
@@ -16,6 +17,18 @@ public class JwtService {
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    @PostConstruct
+    public void validateJwtConfiguration() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET no está configurado o está vacío");
+        }
+        try {
+            getSecretKey();
+        } catch (Exception e) {
+            throw new IllegalStateException("JWT_SECRET debe ser Base64 válido y de longitud segura para HMAC", e);
+        }
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
